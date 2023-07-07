@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           ),
           child: Center(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 1080),
+              constraints: const BoxConstraints(maxWidth: 1440),
               child: const Center(
                 child: MyCollectionPage(),
               ),

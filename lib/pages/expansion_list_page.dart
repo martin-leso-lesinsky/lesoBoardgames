@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:leso_board_games/components/constants.dart';
+import 'package:leso_board_games/models/game_model.dart';
 
-class StatisticPage extends StatelessWidget {
-  const StatisticPage({Key? key}) : super(key: key);
+class ExpansionListPage extends StatelessWidget {
+  final Game game;
+  const ExpansionListPage({required this.game, required Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class StatisticPage extends StatelessWidget {
               ),
               child: const Center(
                 child: Text(
-                  'Game statistics will be here',
+                  'Expansion List for game will be here',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

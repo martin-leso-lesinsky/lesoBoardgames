@@ -1,0 +1,52 @@
+// import 'package:leso_board_games/models/game_model.dart';
+// import 'package:sqflite/sqflite.dart';
+// import 'package:path/path.dart';
+
+// import '../models/local_model.dart';
+
+// class DatabaseHelper {
+//   static const int _version = 1;
+//   static const String _dbName = "Games.db";
+
+//   static Future<Database> _getDB() async {
+//     return openDatabase(join(await getDatabasesPath(), _dbName),
+//         onCreate: (db, version) async => await db.execute(
+//             "CREATE TABLE Game(id INTEGER PRIMARY KEY, value TEXT NOT NULL, date TEXT NOT NULL);"),
+//         version: _version);
+//   }
+
+//   static Future<int> addGame(LocalGame localGame) async {
+//     final db = await _getDB();
+//     return await db.insert("LocalGame", localGame.toJson(),
+//         conflictAlgorithm: ConflictAlgorithm.replace);
+//   }
+
+//   static Future<int> updateGame(LocalGame localGame) async {
+//     final db = await _getDB();
+//     return await db.update("LocalGame", localGame(),
+//         where: 'id = ?',
+//         whereArgs: [LocalGame.id],
+//         conflictAlgorithm: ConflictAlgorithm.replace);
+//   }
+
+//   static Future<int> deletegame(LocalGame localGame) async {
+//     final db = await _getDB();
+//     return await db.delete(
+//       "Game",
+//       where: 'id = ?',
+//       whereArgs: [localGame.id],
+//     );
+//   }
+
+//   static Future<List<LocalGame>?> getAllGames() async {
+//     final db = await _getDB();
+
+//     final List<Map<String, dynamic>> maps = await db.query("LocalGame");
+
+//     if (maps.isEmpty) {
+//       return null;
+//     }
+
+//     return List.generate(maps.length, (index) => Game.fromJson(maps[index]));
+//   }
+// }

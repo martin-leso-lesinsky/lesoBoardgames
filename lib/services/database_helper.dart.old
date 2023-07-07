@@ -1,0 +1,70 @@
+import 'package:leso_board_games/models/game_model.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+
+class DatabaseHelper {
+  static final DatabaseHelper instance = DatabaseHelper._();
+
+  static Database? _database;
+
+  DatabaseHelper._();
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, 'my_database.db');
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDatabase,
+    );
+  }
+
+  Future<String> getDatabasePath() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'my_database.db');
+    String databasePath = await getDatabasePath();
+    print('Database path: $databasePath');
+    return path;
+  }
+
+  Future<void> _createDatabase(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE games (
+        id INTEGER PRIMARY KEY,
+        objectId TEXT,
+        collId TEXT,
+        name TEXT,
+        image TEXT,
+        thumbnail TEXT,
+        statusOwn INTEGER,
+        numPlays INTEGER,
+        yearPublished INTEGER
+      )
+    ''');
+  }
+
+  Future<void> insertGames(List<Game> games) async {
+    final db = await database;
+    final batch = db.batch();
+    for (final game in games) {
+      batch.insert('games', game.toMap());
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<List<Game>> getGames() async {
+    final db = await database;
+    final maps = await db.query('games');
+    return List.generate(maps.length, (i) {
+      return Game.fromMap(maps[i]);
+    });
+  }
+}
