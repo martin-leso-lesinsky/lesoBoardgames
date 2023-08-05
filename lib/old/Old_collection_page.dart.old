@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:leso_board_games/pages/detail_page.dart';
-import 'package:leso_board_games/pages/statistic_page.dart';
+import 'package:leso_board_games/pages/detail_page.dart.old';
+import 'package:leso_board_games/pages/start_page.dart';
 import '../models/game_model.dart';
-import '../services/get_collection.dart';
+// import '../services/get_collection.dart.old';
 import 'package:leso_board_games/components/game_list_tile.dart';
 import 'package:leso_board_games/components/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+late String bgUserName;
 dynamic totalGamesCount;
 dynamic totalNumPlays;
 var gameExistence = "own=1"; //default
@@ -38,7 +40,9 @@ enum SortingOption {
 }
 
 class MyCollectionPage extends StatefulWidget {
-  const MyCollectionPage({super.key});
+  final String bgUserName;
+  const MyCollectionPage({required this.bgUserName, Key? key})
+      : super(key: key);
 
   @override
   _MyCollectionPageState createState() => _MyCollectionPageState();
@@ -52,20 +56,26 @@ class _MyCollectionPageState extends State<MyCollectionPage> {
   @override
   void initState() {
     super.initState();
-    _fetchGames();
+    // _fetchGames();
     _filterGames([]);
   }
 
-  void _fetchGames() async {
-    final gamesData =
-        await GetCollection.fetchGames('lesiak', gameExistence, gamesOnly);
-    var filteredGames = gamesData.games.toList();
-    setState(() {
-      totalNumPlays =
-          filteredGames.fold<int>(0, (sum, game) => sum + game.numPlays);
-      totalGamesCount = gamesData.gamesCount;
-      _futureGames = Future.value(filteredGames);
-    });
+  // void _fetchGames() async {
+  //   final gamesData = await GetCollection.fetchGames(
+  //       widget.bgUserName, gameExistence, gamesOnly);
+  //   var filteredGames = gamesData.games.toList();
+  //   setState(() {
+  //     totalNumPlays =
+  //         filteredGames.fold<int>(0, (sum, game) => sum + game.numPlays);
+  //     totalGamesCount = gamesData.gamesCount;
+  //     _futureGames = Future.value(filteredGames);
+  //     _saveTotalNumPlays(totalNumPlays);
+  //   });
+  // }
+
+  void _saveTotalNumPlays(int totalNumPlays) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('totalNumPlays', totalNumPlays);
   }
 
   ///default sort by max num plays
@@ -147,7 +157,7 @@ class _MyCollectionPageState extends State<MyCollectionPage> {
       _gameExistence = Existence.own;
       gameExistence = "own=1"; //set parameter for get_collection API
     }
-    _fetchGames();
+    // _fetchGames();
   }
 
   /// switcher between only games and games + expansions
@@ -163,7 +173,7 @@ class _MyCollectionPageState extends State<MyCollectionPage> {
       gamesOnly =
           '&excludesubtype=boardgameexpansion'; //set parameter for get_collection API
     }
-    _fetchGames();
+    // _fetchGames();
   }
 
   void _filterList(String searchText) {
@@ -186,6 +196,12 @@ class _MyCollectionPageState extends State<MyCollectionPage> {
           return false;
       }
     }).toList();
+  }
+
+  Future<String?> _getLastSyncTimestamp() async {
+    final prefs = await SharedPreferences.getInstance();
+    final timestamp = prefs.getString('lastBgSync');
+    return timestamp;
   }
 
   @override
@@ -215,184 +231,189 @@ class _MyCollectionPageState extends State<MyCollectionPage> {
                   ),
                 ),
               ),
+              Text(
+                widget.bgUserName, // Display the _lastUsedUser here
+                style: const TextStyle(fontSize: 16, color: Colors.lightBlue),
+              ),
             ],
           ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => StartPage()),
+                );
+              },
+              icon: Icon(Icons.account_circle),
+              iconSize: 30,
+            ),
+          ],
         ),
         backgroundColor: const Color.fromARGB(255, 35, 35, 35),
 
         /// Body
         body: Column(
           children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const StatisticPage()),
-                );
-              },
-
-              /// Top Statistic Container
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                color: const Color.fromARGB(255, 40, 40, 40),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Games',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+              color: const Color.fromARGB(255, 40, 40, 40),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Games',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          totalGamesCount != null ? '$totalGamesCount' : '',
-                          // gamesData.gamesCount,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        totalGamesCount != null ? '$totalGamesCount' : '',
+                        // gamesData.gamesCount,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Plays',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Plays',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          totalNumPlays != null ? '$totalNumPlays' : '',
-                          // '206',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        totalNumPlays != null ? '$totalNumPlays' : '',
+                        // '206',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text(
-                          'Value',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text(
+                        'Value',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          '2005 \$',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        '2005 \$',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Container(
-                                  height: 30,
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 100),
-                                  color: gameExistence == "preordered=1"
-                                      ? Colors.lightBlueAccent
-                                      : Colors.greenAccent,
-                                  child: Row(
-                                    mainAxisAlignment:
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Container(
+                                height: 30,
+                                constraints:
+                                    const BoxConstraints(maxWidth: 100),
+                                color: gameExistence == "preordered=1"
+                                    ? Colors.lightBlueAccent
+                                    : Colors.greenAccent,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      gameExistence == "preordered=1"
+                                          ? MainAxisAlignment.start
+                                          : MainAxisAlignment.end,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: _gameExistenceState,
+                                      style: ElevatedButton.styleFrom(
+                                          shape: const StadiumBorder(),
+                                          backgroundColor: buttonGrey),
+                                      child: Text(
+                                        textAlign: TextAlign.center,
                                         gameExistence == "preordered=1"
-                                            ? MainAxisAlignment.start
-                                            : MainAxisAlignment.end,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: _gameExistenceState,
-                                        style: ElevatedButton.styleFrom(
-                                            shape: const StadiumBorder(),
-                                            backgroundColor: buttonGrey),
-                                        child: Text(
-                                          textAlign: TextAlign.center,
-                                          gameExistence == "preordered=1"
-                                              ? "Ordered"
-                                              : "Own",
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                            ? "Ordered"
+                                            : "Own",
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Container(
-                              height: 30,
-                              constraints: const BoxConstraints(maxWidth: 100),
-                              color: gamesOnly == ""
-                                  ? Colors.yellowAccent
-                                  : Colors.greenAccent,
-                              child: Row(
-                                mainAxisAlignment: gamesOnly == ""
-                                    ? MainAxisAlignment.start
-                                    : MainAxisAlignment.end,
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: _gamesOnlyState,
-                                    style: ElevatedButton.styleFrom(
-                                      shape: const StadiumBorder(),
-                                      backgroundColor: buttonGrey,
-                                    ),
-                                    child: Text(
-                                      textAlign: TextAlign.center,
-                                      gamesOnly == "" ? "All" : "Games",
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Container(
+                            height: 30,
+                            constraints: const BoxConstraints(maxWidth: 100),
+                            color: gamesOnly == ""
+                                ? Colors.yellowAccent
+                                : Colors.greenAccent,
+                            child: Row(
+                              mainAxisAlignment: gamesOnly == ""
+                                  ? MainAxisAlignment.start
+                                  : MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: _gamesOnlyState,
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    backgroundColor: buttonGrey,
+                                  ),
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    gamesOnly == "" ? "All" : "Games",
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
 

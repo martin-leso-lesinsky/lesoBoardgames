@@ -1,50 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:leso_board_games/components/constants.dart';
-import 'package:leso_board_games/models/game_model.dart';
+import 'package:leso_board_games/models/hra_model.dart';
+import 'package:leso_board_games/pages/hra_detail_page.dart';
 
-DateTime dt1 = DateTime.now();
+class HraListTile extends StatelessWidget {
+  final String bgUserName;
+  final String objectId;
+  final String name;
+  final String gameValue;
+  final String yearPublished;
+  final String thumbnail;
+  final String numPlays;
+  final String subtype;
+  final List<Hra> hras;
 
-class GameListTile extends StatelessWidget {
-  final Game game;
-
-  const GameListTile({
-    Key? key,
-    required this.game,
-  }) : super(key: key);
+  const HraListTile({
+    super.key,
+    required this.bgUserName,
+    required this.objectId,
+    required this.name,
+    required this.gameValue,
+    required this.yearPublished,
+    required this.thumbnail,
+    required this.numPlays,
+    required this.subtype,
+    required this.hras,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return GestureDetector(
+      onTap: () {
+        _navigateToHraDetail(context);
+      },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(5, 0, 0, 5),
-              child: SizedBox(
-                height: 15, // height based on 3 lines of text
-                child: Row(
-                  children: [
-                    const Text(
-                      "Published: ",
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
+            SizedBox(
+              height: 15, // height based on 3 lines of text
+              child: Row(
+                children: [
+                  const Text(
+                    "Published: ",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    yearPublished,
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(
                         color: Colors.black,
                         fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      game.yearPublished.toString(),
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+                        fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ),
             SizedBox(
@@ -61,7 +76,7 @@ class GameListTile extends StatelessWidget {
                         horizontal: 12, vertical: 12),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(game.image),
+                      child: Image.network(thumbnail),
                     ),
                   ),
                 ),
@@ -77,7 +92,7 @@ class GameListTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    game.name,
+                    name,
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
@@ -88,37 +103,50 @@ class GameListTile extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(5, 5, 0, 10),
-              child: Row(
-                children: [
-                  const Text(
-                    "Played: ",
-                    style: TextStyle(
-                        fontWeight: FontWeight.normal, color: basicLightGrey),
-                  ),
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: game.numPlays == 0
-                          ? const Color.fromARGB(255, 255, 154, 147)
-                          : const Color.fromARGB(255, 100, 255, 255),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(1),
-                        child: Text(
-                          "${game.numPlays}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: darkGrey,
+              child: numPlays != '0'
+                  ? Row(
+                      children: [
+                        const Text(
+                          "Played: ",
+                          style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              color: basicLightGrey),
+                        ),
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 100, 255, 255),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(1),
+                              child: Text(
+                                numPlays,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: darkGrey,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
+                    )
+                  : Container(
+                      alignment: Alignment.centerLeft,
+
+                      /// if its expansion its not displayed number of plays
+                      child: subtype != 'boardgameexpansion'
+                          ? const Text(
+                              "not yet Played",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: darkGrey),
+                            )
+                          : const Text(''),
                     ),
-                  ),
-                ],
-              ),
             ),
             Row(
               children: [
@@ -135,8 +163,9 @@ class GameListTile extends StatelessWidget {
                         Padding(
                           padding: EdgeInsets.all(10),
                           child: Text(
-                            "PPP ratio: ",
+                            "PPPR: ",
                             style: TextStyle(
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: normalGrey,
                             ),
@@ -148,7 +177,7 @@ class GameListTile extends StatelessWidget {
                             "0.56",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 25,
+                                fontSize: 14,
                                 color: Color.fromARGB(255, 115, 248, 188)),
                           ),
                         ),
@@ -156,34 +185,32 @@ class GameListTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Container(
-                    // width: 120,
-                    // height: 100,
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 18, 18, 20),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
-                      children: const [
-                        Padding(
+                      children: [
+                        const Padding(
                           padding: EdgeInsets.all(10),
                           child: Text(
                             "Value:",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: normalGrey,
-                            ),
+                                fontWeight: FontWeight.bold,
+                                color: normalGrey,
+                                fontSize: 10),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: Text(
-                            "125 €",
-                            style: TextStyle(
+                            "$gameValue €",
+                            style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 25,
+                                fontSize: 14,
                                 color: Color.fromARGB(255, 248, 246, 115)),
                           ),
                         ),
@@ -195,6 +222,19 @@ class GameListTile extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _navigateToHraDetail(BuildContext context) async {
+    final hra = hras.firstWhere((hra) => hra.objectId.toString() == objectId);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HraDetail(
+          hraData: hra.toJson(),
+          bgUserName: bgUserName,
+        ), // Keep this if needed
       ),
     );
   }
