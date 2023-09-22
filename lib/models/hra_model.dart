@@ -11,8 +11,11 @@ class HraFields {
     thumbnail,
     statusOwn,
     numPlays,
+
+    /// local Db parameters - not part of Fetch from api
     gameValue,
-    obtainDate
+    obtainDate,
+    parentGameId
   ];
 
   static const String objectId = 'objectId';
@@ -24,8 +27,11 @@ class HraFields {
   static const String thumbnail = 'thumbnail';
   static const String statusOwn = 'statusOwn';
   static const String numPlays = 'numPlays';
+
+  /// local Db parameters - not part of Fetch from api
   static const String gameValue = 'gameValue';
   static const String obtainDate = 'obtainDate';
+  static const String parentGameId = 'parentGameId';
 }
 
 class Hra {
@@ -38,8 +44,11 @@ class Hra {
   final String thumbnail;
   final bool statusOwn;
   final int numPlays;
-  final int gameValue;
-  final String obtainDate;
+
+  /// local Db parameters - not part of Fetch from api
+  final num gameValue;
+  final String? obtainDate;
+  final int? parentGameId;
 
   const Hra({
     required this.objectId,
@@ -51,13 +60,14 @@ class Hra {
     required this.thumbnail,
     required this.statusOwn,
     required this.numPlays,
-    this.gameValue = 0,
-    this.obtainDate = '1900', // Optional parameter
+
+    /// local Db parameters - not part of Fetch from api
+    this.gameValue = 0.00,
+    this.obtainDate,
+    this.parentGameId,
   });
-  // }) : obtainDate = obtainDate ?? DateTime(2017, 9, 7, 17, 30);
 
   Hra copy({
-    // int? id,
     int? objectId,
     String? subtype,
     String? collId,
@@ -67,8 +77,11 @@ class Hra {
     String? thumbnail,
     bool? statusOwn,
     int? numPlays,
-    int? gameValue,
+
+    /// local Db parameters - not part of Fetch from api
+    num? gameValue,
     String? obtainDate,
+    int? parentGameId,
   }) =>
       Hra(
         objectId: objectId ?? this.objectId,
@@ -80,8 +93,11 @@ class Hra {
         thumbnail: thumbnail ?? this.thumbnail,
         statusOwn: statusOwn ?? this.statusOwn,
         numPlays: numPlays ?? this.numPlays,
+
+        /// local Db parameters - not part of Fetch from api
         gameValue: gameValue ?? this.gameValue,
         obtainDate: obtainDate ?? this.obtainDate,
+        parentGameId: parentGameId ?? this.parentGameId,
       );
 
   static Hra fromJson(Map<String, Object?> json) => Hra(
@@ -94,8 +110,11 @@ class Hra {
         thumbnail: json[HraFields.thumbnail] as String,
         statusOwn: (json[HraFields.statusOwn] as int) == 1,
         numPlays: json[HraFields.numPlays] as int? ?? 0,
-        gameValue: json[HraFields.gameValue] as int? ?? 0,
-        obtainDate: json[HraFields.obtainDate] as String,
+
+        /// local Db parameters - not part of Fetch from api
+        gameValue: json[HraFields.gameValue] as num? ?? 0.00,
+        obtainDate: json[HraFields.obtainDate] as String? ?? 'N/A',
+        parentGameId: json[HraFields.parentGameId] as int? ?? 0,
       );
 
   Map<String, Object?> toJson({bool includeId = true}) {
@@ -109,8 +128,11 @@ class Hra {
       HraFields.thumbnail: thumbnail,
       HraFields.statusOwn: statusOwn ? 1 : 0,
       HraFields.numPlays: numPlays,
+
+      /// local Db parameters - not part of Fetch from api
       HraFields.gameValue: gameValue,
       HraFields.obtainDate: obtainDate,
+      HraFields.parentGameId: parentGameId,
     };
 
     return json;

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:leso_board_games/db/hras_database.dart';
 import 'package:leso_board_games/pages/hra_start_page.dart';
-import 'package:leso_board_games/pages/hras_list_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-var _lastUsedUser = '';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final prefs = await SharedPreferences.getInstance();
-  _lastUsedUser = prefs.getString('lastUsedUser') ?? '';
+  /// Initialize the HrasDatabase instance
+  await HrasDatabase.instance.database;
+
+  /// Call the function to calculate and store total values
+  await HrasDatabase.instance.calculateAndStoreTotalValues();
 
   runApp(const MyApp());
 }
@@ -40,16 +40,9 @@ class MyApp extends StatelessWidget {
                     } else if (snapshot.hasError) {
                       return const Text('Error checking database');
                     } else {
-                      final hrasCount = snapshot.data;
-                      if (_lastUsedUser.isEmpty && hrasCount == 0) {
-                        return const StartPage(
-                          bgUserName: '',
-                        );
-                      } else {
-                        return HrasPage(
-                          bgUserName: _lastUsedUser,
-                        );
-                      }
+                      return const StartPage(
+                        bgUserName: '',
+                      );
                     }
                   },
                 ),
